@@ -2,32 +2,60 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetrix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tetrix Mobile</title>
     <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
         body {
             background-color: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            font-family: Arial, sans-serif;
+            padding: 10px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overscroll-behavior: contain;
+            touch-action: manipulation;
         }
         
         .game-container {
             display: flex;
-            gap: 20px;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .game-area {
+            display: flex;
+            width: 100%;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .board-container {
+            position: relative;
+            width: 65%;
+            aspect-ratio: 1/2;
         }
         
         #game-board {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             border: 2px solid #333;
             background-color: #111;
-            width: 300px;
-            height: 600px;
             display: grid;
             grid-template-rows: repeat(20, 1fr);
             grid-template-columns: repeat(10, 1fr);
+            touch-action: none;
         }
         
         .cell {
@@ -37,15 +65,19 @@
         .info-panel {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            width: 150px;
+            gap: 10px;
+            width: 35%;
+        }
+        
+        .next-piece-container {
+            flex-grow: 0;
         }
         
         .next-piece {
             border: 2px solid #333;
             background-color: #222;
-            width: 120px;
-            height: 120px;
+            width: 100%;
+            aspect-ratio: 1/1;
             display: grid;
             grid-template-rows: repeat(4, 1fr);
             grid-template-columns: repeat(4, 1fr);
@@ -55,20 +87,20 @@
             border: 2px solid #333;
             background-color: #222;
             color: white;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
-        }
-        
-        .controls {
-            border: 2px solid #333;
-            background-color: #222;
-            color: white;
-            padding: 10px;
-        }
-        
-        .controls p {
-            margin: 5px 0;
             font-size: 14px;
+            flex-grow: 1;
+        }
+        
+        .score-panel h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .score-panel p {
+            margin: 4px 0;
         }
         
         .game-over {
@@ -76,26 +108,63 @@
             display: none;
             justify-content: center;
             align-items: center;
-            width: 300px;
-            height: 600px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background-color: rgba(0, 0, 0, 0.8);
             color: white;
             font-size: 24px;
             flex-direction: column;
+            z-index: 10;
+        }
+        
+        .controls-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
         }
         
         button {
             background-color: #4CAF50;
             border: none;
             color: white;
-            padding: 10px 20px;
+            padding: 12px;
             text-align: center;
             text-decoration: none;
-            display: inline-block;
             font-size: 16px;
-            margin: 10px 2px;
+            margin: 0;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 8px;
+            flex-grow: 1;
+            touch-action: manipulation;
+            user-select: none;
+        }
+        
+        .control-button {
+            background-color: #2196F3;
+            font-size: 24px;
+            font-weight: bold;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #rotate-button {
+            flex-grow: 1;
+        }
+        
+        #drop-button {
+            background-color: #FF5722;
+            flex-grow: 1;
         }
         
         /* Cores das peças */
@@ -110,33 +179,41 @@
 </head>
 <body>
     <div class="game-container">
-        <div style="position: relative;">
-            <div id="game-board"></div>
-            <div class="game-over" id="game-over">
-                <div>GAME OVER</div>
-                <button id="restart-button">Reiniciar</button>
+        <div class="game-area">
+            <div class="board-container">
+                <div id="game-board"></div>
+                <div class="game-over" id="game-over">
+                    <div>GAME OVER</div>
+                    <button id="restart-button">Reiniciar</button>
+                </div>
+            </div>
+            <div class="info-panel">
+                <div class="next-piece-container">
+                    <h3 style="color: #333; text-align: center; margin: 0 0 5px 0; font-size: 14px;">Próxima</h3>
+                    <div class="next-piece" id="next-piece"></div>
+                </div>
+                <div class="score-panel">
+                    <h3>Pontuação</h3>
+                    <p>Pontos: <span id="score">0</span></p>
+                    <p>Linhas: <span id="lines">0</span></p>
+                    <p>Nível: <span id="level">1</span></p>
+                </div>
             </div>
         </div>
-        <div class="info-panel">
-            <div>
-                <h3 style="color: #333; text-align: center; margin-bottom: 5px;">Próxima Peça</h3>
-                <div class="next-piece" id="next-piece"></div>
+        
+        <div class="controls-area">
+            <div class="button-row">
+                <button id="start-button">Iniciar / Pausar</button>
             </div>
-            <div class="score-panel">
-                <h3 style="margin-top: 0;">Pontuação</h3>
-                <p>Pontos: <span id="score">0</span></p>
-                <p>Linhas: <span id="lines">0</span></p>
-                <p>Nível: <span id="level">1</span></p>
+            <div class="button-row">
+                <button class="control-button" id="left-button">←</button>
+                <button class="control-button" id="rotate-button">↑</button>
+                <button class="control-button" id="right-button">→</button>
             </div>
-            <div class="controls">
-                <h3 style="margin-top: 0;">Controles</h3>
-                <p>← → : Mover</p>
-                <p>↑ : Rotacionar</p>
-                <p>↓ : Descer rápido</p>
-                <p>Espaço : Queda instantânea</p>
-                <p>P : Pausar</p>
+            <div class="button-row">
+                <button class="control-button" id="down-button">↓</button>
+                <button class="control-button" id="drop-button">⤓</button>
             </div>
-            <button id="start-button">Iniciar / Pausar</button>
         </div>
     </div>
 
@@ -154,6 +231,11 @@
         let lines = 0;
         let level = 1;
         let dropSpeed = 1000; // ms
+        
+        // Configuração para toque
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchThreshold = 30; // pixels para swipe
         
         // Formas das peças (formato [y][x] onde 1 é um bloco)
         const SHAPES = {
@@ -619,9 +701,99 @@
             }
         });
         
+        // Configurar controles de toque
+        const gameBoard = document.getElementById('game-board');
+        
+        // Configurar controles de botão para mobile
+        document.getElementById('left-button').addEventListener('click', () => movePiece(-1, 0));
+        document.getElementById('right-button').addEventListener('click', () => movePiece(1, 0));
+        document.getElementById('down-button').addEventListener('click', () => movePiece(0, 1));
+        document.getElementById('rotate-button').addEventListener('click', rotatePiece);
+        document.getElementById('drop-button').addEventListener('click', hardDrop);
+
+        // Adicionar controle de swipe para o tabuleiro
+        gameBoard.addEventListener('touchstart', (e) => {
+            if (isPaused || gameOver) return;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            e.preventDefault();
+        }, { passive: false });
+        
+        gameBoard.addEventListener('touchmove', (e) => {
+            if (isPaused || gameOver) return;
+            e.preventDefault();
+        }, { passive: false });
+        
+        gameBoard.addEventListener('touchend', (e) => {
+            if (isPaused || gameOver) return;
+            
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            
+            // Se o movimento for mais horizontal que vertical
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (Math.abs(deltaX) > touchThreshold) {
+                    if (deltaX > 0) {
+                        movePiece(1, 0); // direita
+                    } else {
+                        movePiece(-1, 0); // esquerda
+                    }
+                }
+            } else {
+                // Se o movimento for mais vertical que horizontal
+                if (Math.abs(deltaY) > touchThreshold) {
+                    if (deltaY > 0) {
+                        movePiece(0, 1); // baixo
+                    } else {
+                        rotatePiece(); // rotacionar para cima
+                    }
+                } else {
+                    // Toque curto para rotacionar
+                    if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
+                        rotatePiece();
+                    }
+                }
+            }
+            
+            e.preventDefault();
+        }, { passive: false });
+        
+        // Double tap para queda rápida
+        let lastTap = 0;
+        gameBoard.addEventListener('touchend', (e) => {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            
+            if (tapLength < 300 && tapLength > 0) {
+                hardDrop();
+                e.preventDefault();
+            }
+            
+            lastTap = currentTime;
+        });
+        
         // Configurar botões
         document.getElementById('start-button').addEventListener('click', startGame);
         document.getElementById('restart-button').addEventListener('click', resetGame);
+        
+        // Impedir o zoom na tela
+        document.addEventListener('gesturestart', (e) => {
+            e.preventDefault();
+        });
+        
+        // Impedir o scrolling da página durante o jogo
+        document.body.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+        
+        // Configurar o jogo para se ajustar à orientação da tela
+        window.addEventListener('resize', () => {
+            renderPiece();
+            renderNextPiece();
+        });
         
         // Inicializar o jogo
         setupNextPieceBoard();
